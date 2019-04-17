@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Apr 17 15:51:36 2019
+Created on Wed Apr 17 21:02:49 2019
 
 @author: clytie
 """
@@ -10,7 +10,7 @@ import tensorflow as tf
 from algorithms.dqn import DQN
 
 
-class DoubleDQN(DQN):
+class DuelDQN(DQN):
     def __init__(self, n_action, dim_ob_image,
                  rnd=1,
                  discount=0.99,
@@ -47,32 +47,44 @@ class DoubleDQN(DQN):
         # d_t
         self._done = tf.placeholder(dtype=tf.float32, shape=[None], name="done")
         
-        def _model(obs):
+        def _model(obs): # return value, advantage
             x = tf.divide(tf.cast(obs, tf.float32), 255.0)
             x = tf.layers.conv2d(x, 32, 8, 4, activation=tf.nn.relu)
             x = tf.layers.conv2d(x, 64, 4, 2, activation=tf.nn.relu)
             x = tf.layers.conv2d(x, 64, 3, 1, activation=tf.nn.relu)
             x = tf.contrib.layers.flatten(x)
             x = tf.layers.dense(x, 512, activation=tf.nn.relu)
-            return tf.layers.dense(x, self.n_action)
+            return tf.layers.dense(x, 1), tf.layers.dense(x, self.n_action)
+        
+        with tf.variable_scope("main"):
+            self._v, self._adv = _model(self.observation)
             
-        with tf.variable_scope("main/qnet"): # need update
-            self._qvals = _model(self.observation)
-            
-        with tf.variable_scope("main/qnet", reuse=True): # used to compute Q(s', a', w)
-            self._act_qvals = tf.stop_gradient(_model(self.next_observation))
-            
-        with tf.variable_scope("target/qnet"): # fixed qnet
-            self._target_qvals = tf.stop_gradient(_model(self.next_observation))
-            
+        with tf.variable_scope("main", reuse=True):
+            self._act_v, self._act_adv = _model(self.next_observation)
+            self._act_v = tf.stop_gradient(self._act_v)
+            self._act_adv = tf.stop_gradient(self._act_adv)
+        
+        with tf.variable_scope("target"):
+            self._target_v, self._target_adv = _model(self.next_observation)
+            self._target_v = tf.stop_gradient(self._target_v)
+            self._target_adv = tf.stop_gradient(self._target_adv)
+        
     def _build_algorithm(self):
         self.optimizer = tf.train.AdamOptimizer(self._lr, epsilon=1e-5)
-        trainable_variables = tf.trainable_variables("main/qnet")
+        trainable_variables = tf.trainable_variables("main")
         
         batch_size = tf.shape(self._done)[0]
+        # used to compute Q(s, a, w)
+        self._qvals = self._v + (self._adv - tf.reduce_mean(self._adv, axis=1, keepdims=True))
         action_index = tf.stack([tf.range(batch_size), self._action], axis=1)
         action_q = tf.gather_nd(self._qvals, action_index)
-    
+        
+        # used to find a'
+        self._act_qvals = self._act_v + (self._act_adv - tf.reduce_mean(self._act_adv, axis=1, keepdims=True))
+        
+        # used to compute Q(s', a', w-)
+        self._target_qvals = self._target_v + (self._target_adv - tf.reduce_mean(self._target_adv, axis=1, keepdims=True))
+
         # target
         arg_act = tf.argmax(self._act_qvals, axis=1, output_type=tf.int32)
         arg_act_index = tf.stack([tf.range(batch_size), arg_act], axis=1)
@@ -84,7 +96,7 @@ class DoubleDQN(DQN):
         # clip gradients
         grads = tf.gradients(loss, trainable_variables)
         clipped_grads, _ = tf.clip_by_global_norm(grads, self._max_grad_norm)
-        # update qnet
+        # update main
         self._train_op = self.optimizer.apply_gradients(zip(clipped_grads, trainable_variables))
         
         def _update_target(qnet, fixed_net):
@@ -99,5 +111,8 @@ class DoubleDQN(DQN):
             return update_ops
         
         # assign qnet to fixed_net
-        self._update_target_op = _update_target("main/qnet", "target/qnet")
+        self._update_target_op = _update_target("main", "target")
         self._log_op = {"loss": loss}
+        
+        
+        

@@ -96,7 +96,7 @@ class DQN(Base):
             self._target_qvals = tf.layers.dense(x, self.n_action)
 
     def _build_algorithm(self):
-        self.optimizer = tf.train.AdadeltaOptimizer(self._lr, epsilon=1e-5)
+        self.optimizer = tf.train.AdamOptimizer(self._lr, epsilon=1e-5)
         trainable_variables = tf.trainable_variables("main/qnet")
         
         batch_size = tf.shape(self._done)[0]
