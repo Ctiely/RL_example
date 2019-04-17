@@ -7,6 +7,7 @@ Created on Tue Apr 16 16:18:44 2019
 """
 
 import sys
+sys.path.append("..")
 import random
 import signal
 import numpy as np
