@@ -47,7 +47,7 @@ class BreakoutEnv(object):
                 self.env.render()
             for idx, each in enumerate(self.frames):
                 self.st[:, :, idx: idx + 1] = each
-            self.env_wrapper.put_srd(self.st, reward, done)
+            self.env_wrapper.put_srd(self.st, reward, done) # s_{t+1}, r_t, d_t
             action = self.env_wrapper.get_a()
             if done:
                 state = self.env.reset()
