@@ -13,7 +13,7 @@ if __name__ == "__main__":
     from algorithms.dqn import DQN
 
 
-    DQNetwork = DQN(4, (84, 84, 4), epsilon_schedule=lambda x: 0)
+    DQNetwork = DQN(4, (84, 84, 4), epsilon_schedule=lambda x: 0, save_path="./dqn_log")
     env = BreakoutEnv(4999, num_envs=1, mode="test")
     env_ids, states, _, _ = env.start()
     for _ in tqdm(range(10000)):
