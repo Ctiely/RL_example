@@ -23,12 +23,13 @@ def signal_handler(sig, frame):
 
 class BreakoutEnv(object):
     def __init__(self, port, index=0, seed=42, frame_stack=4, 
-                 episode_life=False, clip_rewards=True):
+                 episode_life=True, clip_rewards=True, render=False):
         self.env = GymEnv("BreakoutNoFrameskip-v4", 
                           index, seed, 
                           episode_life=episode_life, 
                           clip_rewards=clip_rewards)
         self._port = port
+        self.render = render
         self.frame_stack = frame_stack
         self.env_wrapper = EnvironmentWrapper(("localhost", port))
         self.st = np.zeros((84, 84, self.frame_stack), dtype=np.uint8)
@@ -42,6 +43,8 @@ class BreakoutEnv(object):
         reward = 0.0
         done = False
         while True:
+            if self.render:
+                self.env.render()
             for idx, each in enumerate(self.frames):
                 self.st[:, :, idx: idx + 1] = each
             self.env_wrapper.put_srd(self.st, reward, done)
@@ -61,8 +64,10 @@ signal.signal(signal.SIGINT, signal_handler)
            
 if __name__ == "__main__":
     port = sys.argv[1]
+    mode = sys.argv[2]
+    render = True if mode == "test" else False
     index = random.randint(0, 100)
     # print("index: ", index)
-    env = BreakoutEnv(int(port), index)
+    env = BreakoutEnv(int(port), index, render=render)
     env.start()
                 

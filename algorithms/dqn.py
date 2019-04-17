@@ -42,7 +42,7 @@ class DQN(Base):
     def __init__(self, n_action, dim_ob_image,
                  rnd=1,
                  discount=0.99,
-                 epsilon_schedule=lambda x: max(0.1, (1e5-x) / 1e5),
+                 epsilon_schedule=lambda x: max(0.1, (8e4-x) / 8e4),
                  update_target_freq=5000,
                  lr=2.5e-4,
                  max_grad_norm=5,

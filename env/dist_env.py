@@ -17,9 +17,10 @@ cur_path = os.getcwd()
 
 
 class BaseEnv(object):
-    def __init__(self, name, port=None):
+    def __init__(self, name, port=None, mode="train"):
         self.port = port
         self.game = name
+        self.mode = mode
         self.agent = AgentWrapper(self.port)
         self.agent.setDaemon(True)
         self.agent.start()
@@ -27,7 +28,7 @@ class BaseEnv(object):
 
     def _start_env(self, num_envs):
         os.chdir(f"{env_path}")
-        worker_cmd = f'''python {env_path}/{self.game}.py {self.port}'''
+        worker_cmd = f'''python {env_path}/{self.game}.py {self.port} {self.mode}'''
         for _ in range(num_envs):
             self.processes.append(subprocess.Popen(worker_cmd, shell=True))
         os.chdir(cur_path)
@@ -52,8 +53,8 @@ class BaseEnv(object):
         raise NotImplementedError
 
 class BreakoutEnv(BaseEnv):
-    def __init__(self, port, num_envs=4):
-        super().__init__("breakout", port)
+    def __init__(self, port, num_envs=4, mode="train"):
+        super().__init__("breakout", port, mode)
         self.num_envs = num_envs
         self.num_srd = max(1, self.num_envs // 2)
     

@@ -38,6 +38,6 @@ if __name__ == "__main__":
     dist_env = BreakoutEnv(port=49999)
     env_ids, states, rewards, dones = dist_env.start()
     for _ in range(100):
-        env_ids, states, rewards, dones = dist_env.step(env_ids, [0, 1, 2, 3])
+        env_ids, states, rewards, dones = dist_env.step(env_ids, [2, 3])
 
     trajs = dist_env.get_episodes()
