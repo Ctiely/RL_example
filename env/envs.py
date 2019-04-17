@@ -1,6 +1,6 @@
 import gym
 from gym import Wrapper, wrappers
-from atari_wrappers import wrap_deepmind
+from env.atari_wrappers import wrap_deepmind
 
 
 # https://github.com/MG2033/A2C/blob/master/envs/base_env.py
