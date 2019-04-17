@@ -16,7 +16,7 @@ if __name__ == "__main__":
     env = BreakoutEnv(49999, num_envs=3)
     env_ids, states, rewards, dones = env.start()
     for _ in range(100):
-        env_ids, states, rewards, dones = env.step(env_ids, np.random.randint(env.action_space, size=env.num_envs))
+        env_ids, states, rewards, dones = env.step(env_ids, np.random.randint(env.action_space, size=env.num_srd))
     trajs = env.get_episodes()
 
     memory.add(trajs)

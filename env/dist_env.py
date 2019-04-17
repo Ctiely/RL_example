@@ -55,6 +55,7 @@ class BreakoutEnv(BaseEnv):
     def __init__(self, port, num_envs=4):
         super().__init__("breakout", port)
         self.num_envs = num_envs
+        self.num_srd = max(1, self.num_envs // 2)
     
     @property
     def state_space(self):
@@ -65,7 +66,7 @@ class BreakoutEnv(BaseEnv):
         return 4
 
     def _get_srd(self):
-        env_ids, states, rewards, dones = self.agent.get_srd_batch(self.num_envs)
+        env_ids, states, rewards, dones = self.agent.get_srd_batch(self.num_srd)
         return env_ids, states, rewards, dones
 
     def start(self):
@@ -74,7 +75,7 @@ class BreakoutEnv(BaseEnv):
         return self._get_srd()
 
     def step(self, env_ids, actions):
-        assert len(actions) == self.num_envs
+        assert len(actions) == self.num_srd
         self.agent.put_a_batch(env_ids, actions)
         return self._get_srd()
 
