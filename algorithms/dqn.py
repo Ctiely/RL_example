@@ -141,7 +141,7 @@ class DQN(Base):
         actions[idx] = max_a[idx]
         return actions
 
-    def update(self, databatch):
+    def update(self, databatch, sw_dir):
         s_batch, a_batch, r_batch, d_batch, next_s_batch = databatch
 
         # update
@@ -169,6 +169,6 @@ class DQN(Base):
                                     self._reward: r_batch,
                                     self._done: d_batch,
                                     self.next_observation: next_s_batch})
-            self.sw.add_scalars("dqn", log, global_step=global_step)
+            self.sw.add_scalars(sw_dir, log, global_step=global_step)
             
 
