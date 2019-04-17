@@ -81,3 +81,7 @@ class BreakoutEnv(BaseEnv):
 
     def get_episodes(self):
         return self.agent.get_episodes(True)
+
+    @property
+    def mean_reward(self):
+        return self.agent.statistics()["mean_reward"]
