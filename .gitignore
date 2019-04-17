@@ -1,4 +1,4 @@
 graphs
 .idea
-log
+*log*
 __pycache__
