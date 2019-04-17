@@ -26,7 +26,7 @@ if __name__ == "__main__":
     trajs = env.get_episodes()
 
     memory.add(trajs)
-    DDQNetwork = DoubleDQN(env.action_space, env.state_space)
+    DDQNetwork = DoubleDQN(env.action_space, env.state_space, save_path="./double_dqn_log")
     
     print("start train: ")
     for step in range(10000000):
