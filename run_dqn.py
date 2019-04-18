@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO, format='%(asctime)s|%(levelname)s|%(message)s')
 
-    memory = ReplayBuffer()
+    memory = ReplayBuffer(max_size=500000)
     env = BreakoutEnv(49999, num_envs=20)
     env_ids, states, rewards, dones = env.start()
     print("pre-train: ")
