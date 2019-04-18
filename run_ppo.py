@@ -15,7 +15,7 @@ if __name__ == "__main__":
     
     logging.basicConfig(level=logging.INFO, format='%(asctime)s|%(levelname)s|%(message)s')
 
-    explore_steps = 2048
+    explore_steps = 1024
     total_updates = 1000
     save_model_freq = 100
     
