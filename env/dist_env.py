@@ -49,7 +49,7 @@ class BaseEnv(object):
             time.sleep(0.1)
             self.processes = []
 
-    def get_episodes(self):
+    def get_episodes(self, return_total_traj=False):
         raise NotImplementedError
 
 class BreakoutEnv(BaseEnv):
@@ -80,8 +80,9 @@ class BreakoutEnv(BaseEnv):
         self.agent.put_a_batch(env_ids, actions)
         return self._get_srd()
 
-    def get_episodes(self):
-        return self.agent.get_episodes(True)
+    def get_episodes(self, return_total_traj=False):
+        withdraw_running = False if return_total_traj else True
+        return self.agent.get_episodes(withdraw_running=withdraw_running)
 
     @property
     def mean_reward(self):
