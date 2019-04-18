@@ -18,7 +18,7 @@ class DoubleDQN(DQN):
                  update_target_freq=5000,
                  lr=2.5e-4,
                  max_grad_norm=5,
-                 save_path="./log",
+                 save_path="./double_dqn_log",
                  save_model_freq=1000,
                  log_freq=100):
         super().__init__(n_action=n_action, 
