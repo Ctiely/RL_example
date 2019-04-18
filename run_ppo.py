@@ -13,19 +13,18 @@ if __name__ == "__main__":
     from algorithms.ppo import PPO
     from env.dist_env import BreakoutEnv
     
-    logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)-15s\t%(filename)s\t%(lineno)d\t%(message)s')
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s|%(levelname)s|%(message)s')
 
-    explore_steps = 512
-    total_updates = 500
-    save_model_freq = 30
+    explore_steps = 2048
+    total_updates = 1000
+    save_model_freq = 100
     
     env = BreakoutEnv(50002, num_envs=20)
     env_ids, states, rewards, dones = env.start()
-    ppo = PPO(env.action_space, env.state_space)
+    ppo = PPO(env.action_space, env.state_space, clip_schedule=lambda x: 0.2)
     
     nth_trajectory = 0
-    while nth_trajectory < total_updates:
+    while True:
         nth_trajectory += 1
         for _ in tqdm(range(explore_steps)):
             actions = ppo.get_action(np.asarray(states))
@@ -37,7 +36,11 @@ if __name__ == "__main__":
         
         ppo.update(s_batch, a_batch, r_batch, d_batch,
                        min(0.9, nth_trajectory / total_updates))
-        
+        ppo.sw.add_scalar(
+                    'epreward_mean',
+                    env.mean_reward,
+                    global_step=nth_trajectory)
+
         if nth_trajectory % save_model_freq == 0:
             ppo.save_model()
 
