@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO, format='%(asctime)s|%(levelname)s|%(message)s')
 
-    memory = ReplayBuffer(max_size=200000)
+    memory = ReplayBuffer()
     env = BreakoutEnv(49999, num_envs=20)
     env_ids, states, rewards, dones = env.start()
     print("pre-train: ")
@@ -32,11 +32,12 @@ if __name__ == "__main__":
         for _ in range(20):
             actions = DQNetwork.get_action(np.asarray(states))
             env_ids, states, rewards, dones = env.step(env_ids, actions)
-        if step % 100 == 0:
+        if step % 10 == 0:
             logging.info(f'>>>>{env.mean_reward}, nth_step{step}, buffer{len(memory)}')
         trajs = env.get_episodes()
         memory.add(trajs)
-        batch_samples = memory.sample(256)
-        DQNetwork.update(batch_samples, sw_dir="dqn")
+        for _ in range(10):
+            batch_samples = memory.sample(32)
+            DQNetwork.update(batch_samples, sw_dir="dqn")
 
     env.close()
