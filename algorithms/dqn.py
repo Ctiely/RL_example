@@ -15,13 +15,17 @@ from algorithms.base import Base
 class ReplayBuffer(object):
     def __init__(self, max_size=int(1e6)):
         self.buffer = deque(maxlen=max_size)
+        self.len = 0
+        self._max_size = max_size
     
     def add(self, trajs):
         s_batch, a_batch, r_batch, d_batch = trajs
         for states, actions, rewards, dones in zip(s_batch, a_batch, r_batch, d_batch):
             len_traj = len(dones)
+            self.len += len_traj
             for i in range(len_traj):
                 self.buffer.append((states[i], actions[i], rewards[i], dones[i], states[i + 1]))
+        self.len = min(self.len, self._max_size)
     
     def sample(self, batch_size):
         buffer_size = len(self.buffer)
@@ -37,12 +41,14 @@ class ReplayBuffer(object):
 
         return states_mb, actions_mb, rewards_mb, dones_mb, next_states_mb
 
+    def __len__(self):
+        return self.len
 
 class DQN(Base):
     def __init__(self, n_action, dim_ob_image,
                  rnd=1,
                  discount=0.99,
-                 epsilon_schedule=lambda x: max(0.1, (8e4-x) / 8e4),
+                 epsilon_schedule=lambda x: max(0.1, (9e4-x) / 9e4),
                  update_target_freq=5000,
                  lr=2.5e-4,
                  max_grad_norm=5,
@@ -159,6 +165,7 @@ class DQN(Base):
             self.save_model()
 
         if global_step % self._update_target_freq == 0:
+            print("update target ...")
             self.sess.run(self._update_target_op)
 
         if global_step % self._log_freq == 0:

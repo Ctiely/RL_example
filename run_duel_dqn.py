@@ -34,10 +34,10 @@ if __name__ == "__main__":
             actions = DuelDQNetwork.get_action(np.asarray(states))
             env_ids, states, rewards, dones = env.step(env_ids, actions)
         if step % 100 == 0:
-            logging.info(f'>>>>{env.mean_reward}, nth_step{step}')
+            logging.info(f'>>>>{env.mean_reward}, nth_step{step}, buffer{len(memory)}')
         trajs = env.get_episodes()
         memory.add(trajs)
-        batch_samples = memory.sample(32)
+        batch_samples = memory.sample(256)
         DuelDQNetwork.update(batch_samples, sw_dir="duel_dqn")
 
     env.close()
