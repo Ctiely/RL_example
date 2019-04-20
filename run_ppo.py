@@ -15,13 +15,13 @@ if __name__ == "__main__":
     
     logging.basicConfig(level=logging.INFO, format='%(asctime)s|%(levelname)s|%(message)s')
 
-    explore_steps = 1024
-    total_updates = 1000
+    explore_steps = 512
+    total_updates = 2000
     save_model_freq = 100
     
     env = BreakoutEnv(50002, num_envs=20)
     env_ids, states, rewards, dones = env.start()
-    ppo = PPO(env.action_space, env.state_space, clip_schedule=lambda x: 0.2)
+    ppo = PPO(env.action_space, env.state_space, train_epoch=5, clip_schedule=lambda x: 0.2)
     
     nth_trajectory = 0
     while True:
