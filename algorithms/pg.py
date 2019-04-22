@@ -64,7 +64,9 @@ class PolicyGradient(Base):
         batch_size = obs.shape[0]
         p_act = self.sess.run(self._p_act,
                               feed_dict={self.ob_image: obs})
-        action = [np.random.choice(self.n_action, p=p_act[i, :] / self.temperature) for i in range(batch_size)]
+        probs = p_act / self.temperature
+        probs = probs / np.sum(probs, axis=1)
+        action = [np.random.choice(self.n_action, p=probs[i, :]) for i in range(batch_size)]
         return action
         
     def update(self, s_batch, a_batch, r_batch):
