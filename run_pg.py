@@ -51,7 +51,8 @@ if __name__ == "__main__":
     action_space = 4
     state_space = (84, 84, 4)
     
-    envs = [GymEnv("BreakoutNoFrameskip-v4", random.randint(0, 100), random.randint(0, 100)) for _ in range(num_traj)]
+    num_env = num_traj // 5
+    envs = [GymEnv("BreakoutNoFrameskip-v4", random.randint(0, 100), random.randint(0, 100)) for _ in range(num_env)]
     pg = PolicyGradient(action_space, state_space, save_path="./pg_log")
     
     total_reward = deque([], maxlen=500)
@@ -61,7 +62,7 @@ if __name__ == "__main__":
         
         s_batch, a_batch, r_batch = [], [], []
         for i in tqdm(range(num_traj)):
-            s_traj, a_traj, r_traj, _ , reward = collect_complete_traj(pg, envs[i])
+            s_traj, a_traj, r_traj, _ , reward = collect_complete_traj(pg, envs[i % num_env])
             s_batch.append(s_traj)
             a_batch.append(a_traj)
             r_batch.append(r_traj)
