@@ -51,7 +51,7 @@ if __name__ == "__main__":
     action_space = 4
     state_space = (84, 84, 4)
     
-    env = GymEnv("BreakoutNoFrameskip-v4", random.randint(0, 100), 42)
+    envs = [GymEnv("BreakoutNoFrameskip-v4", random.randint(0, 100), random.randint(0, 100)) for _ in range(num_traj)]
     pg = PolicyGradient(action_space, state_space, save_path="./pg_log")
     
     total_reward = deque([], maxlen=500)
@@ -60,8 +60,8 @@ if __name__ == "__main__":
         nth_trajectory += 1
         
         s_batch, a_batch, r_batch = [], [], []
-        for _ in tqdm(range(num_traj)):    
-            s_traj, a_traj, r_traj, _ , reward= collect_complete_traj(pg, env)
+        for i in tqdm(range(num_traj)):
+            s_traj, a_traj, r_traj, _ , reward = collect_complete_traj(pg, envs[i])
             s_batch.append(s_traj)
             a_batch.append(a_traj)
             r_batch.append(r_traj)
@@ -79,5 +79,5 @@ if __name__ == "__main__":
 
         if nth_trajectory % save_model_freq == 0:
             pg.save_model()
-            num_traj -= 1
-            num_traj = max(5, num_traj)
+    for env in envs:
+        env.close()
