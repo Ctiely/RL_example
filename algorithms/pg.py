@@ -58,7 +58,7 @@ class PolicyGradient(Base):
         clipped_grads, _ = tf.clip_by_global_norm(grads, self.max_grad_norm)
         # train_op
         self._train_op = self.optimizer.apply_gradients(
-            zip(clipped_grads, tf.trainable_variables()))
+            zip(clipped_grads, tf.trainable_variables()), global_step=tf.train.get_global_step())
 
     def get_action(self, obs):
         batch_size = obs.shape[0]
