@@ -14,10 +14,11 @@ if __name__ == "__main__":
     from algorithms.duel_dqn import DuelDQN
 
 
-    DQNetwork = DuelDQN(4, (84, 84, 4), epsilon_schedule=lambda x: 0, save_path="./double_dqn_log")
+    DQNetwork = DuelDQN(4, (84, 84, 4), epsilon_schedule=lambda x: 0, save_path="./duel_dqn_log")
     env = BreakoutEnv(4999, num_envs=1, mode="test")
     env_ids, states, _, _ = env.start()
     for _ in tqdm(range(10000)):
         time.sleep(0.1)
         actions = DQNetwork.get_action(np.asarray(states))
         env_ids, states, _, _ = env.step(env_ids, actions)
+    env.close()
