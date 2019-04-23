@@ -47,13 +47,11 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(asctime)s|%(levelname)s|%(message)s')
 
     save_model_freq = 100
-    # num_traj = 20
-    num_traj = 1
+    num_traj = 20
     action_space = 4
     state_space = (84, 84, 4)
     
-    # num_env = num_traj // 5
-    num_env = 1
+    num_env = num_traj // 5
     envs = [GymEnv("BreakoutNoFrameskip-v4", random.randint(0, 100), random.randint(0, 100)) for _ in range(num_env)]
     pg = PolicyGradient(action_space, state_space, save_path="./pg_log")
     

@@ -19,11 +19,13 @@ class PolicyGradient(Base):
                  temperature=1.0,
                  discount=0.99,
                  lr=2.5e-4,
+                 entropy_coef=0.01,
                  max_grad_norm=0.5,
                  save_path="./pg_log"):
         self.n_action = n_action
         self.dim_ob_image = dim_ob_image
         
+        self.entropy_coef = entropy_coef
         self.temperature = temperature
         self.max_grad_norm = max_grad_norm
         self._discount = discount
@@ -43,17 +45,21 @@ class PolicyGradient(Base):
         x = tf.layers.conv2d(x, 64, 3, 1, activation=tf.nn.relu)
         x = tf.contrib.layers.flatten(x)
         x = tf.layers.dense(x, 512, activation=tf.nn.relu)
-        self._p_act = tf.layers.dense(x, self.n_action, activation=tf.nn.softmax)
+        self._log_p_act = tf.layers.dense(x, self.n_action)
         
     def _build_algorithm(self):
         self.optimizer = tf.train.AdamOptimizer(self._lr, epsilon=1e-5)
         
         batch_size = tf.shape(self._action)[0]
-        log_p_act = tf.log(tf.gather_nd(self._p_act, tf.stack([tf.range(batch_size), self._action], axis=1)))
+        log_p_act = tf.gather_nd(self._log_p_act, tf.stack([tf.range(batch_size), self._action], axis=1))
 
+        log_prob = tf.nn.log_softmax(self._log_p_act)
+        prob = tf.nn.softmax(log_prob)
+        entropy = - tf.reduce_mean(log_prob * prob, axis=1)   # entropy = - 1/n \sum_i p_i \log(p_i)
         target = - tf.reduce_mean(log_p_act * self._return)
         
-        grads = tf.gradients(target, tf.trainable_variables())
+        total_loss = target - self.entropy_coef * entropy
+        grads = tf.gradients(total_loss, tf.trainable_variables())
         # Clip gradients.
         clipped_grads, _ = tf.clip_by_global_norm(grads, self.max_grad_norm)
         # train_op
@@ -62,10 +68,11 @@ class PolicyGradient(Base):
 
     def get_action(self, obs):
         batch_size = obs.shape[0]
-        p_act = self.sess.run(self._p_act,
+        logit = self.sess.run(self._log_p_act,
                               feed_dict={self.ob_image: obs})
-        probs = p_act / self.temperature
-        probs = probs / np.sum(probs, axis=1)
+        
+        logit = logit - np.max(logit, axis=1, keepdims=True)
+        probs = np.exp(logit / self.temperature) / np.sum(np.exp(logit / self.temperature), axis=1, keepdims=True)
         action = [np.random.choice(self.n_action, p=probs[i, :]) for i in range(batch_size)]
         return action
         
