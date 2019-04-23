@@ -45,18 +45,22 @@ class PolicyGradient(Base):
         x = tf.layers.conv2d(x, 64, 3, 1, activation=tf.nn.relu)
         x = tf.contrib.layers.flatten(x)
         x = tf.layers.dense(x, 512, activation=tf.nn.relu)
-        self._log_p_act = tf.layers.dense(x, self.n_action)
+        self.logit_action_probability = tf.layers.dense(
+                x, self.n_action,
+                kernel_initializer=tf.truncated_normal_initializer(0.0, 0.01))
         
     def _build_algorithm(self):
         self.optimizer = tf.train.AdamOptimizer(self._lr, epsilon=1e-5)
         
         batch_size = tf.shape(self._action)[0]
-        log_p_act = tf.gather_nd(self._log_p_act, tf.stack([tf.range(batch_size), self._action], axis=1))
+        selected_action_index = tf.stack([tf.range(batch_size), self._action], axis=1)
 
-        log_prob = tf.nn.log_softmax(self._log_p_act)
+        log_prob = tf.nn.log_softmax(self.logit_action_probability)
         prob = tf.nn.softmax(log_prob)
         entropy = - tf.reduce_mean(log_prob * prob, axis=1)   # entropy = - 1/n \sum_i p_i \log(p_i)
-        target = - tf.reduce_mean(log_p_act * self._return)
+        
+        log_act = tf.gather_nd(log_prob, selected_action_index)
+        target = - tf.reduce_mean(log_act * self._return)
         
         total_loss = target - self.entropy_coef * entropy
         grads = tf.gradients(total_loss, tf.trainable_variables())
@@ -68,7 +72,7 @@ class PolicyGradient(Base):
 
     def get_action(self, obs):
         batch_size = obs.shape[0]
-        logit = self.sess.run(self._log_p_act,
+        logit = self.sess.run(self.logit_action_probability,
                               feed_dict={self.ob_image: obs})
         
         logit = logit - np.max(logit, axis=1, keepdims=True)
