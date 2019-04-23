@@ -15,8 +15,7 @@ if __name__ == "__main__":
     
     logging.basicConfig(level=logging.INFO, format='%(asctime)s|%(levelname)s|%(message)s')
 
-    explore_steps = 512
-    total_updates = 2000
+    explore_steps = 128
     save_model_freq = 100
     
     env = BreakoutEnv(50001, num_envs=20)

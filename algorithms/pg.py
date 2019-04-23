@@ -96,6 +96,7 @@ class PolicyGradient(Base):
             reward_to_go_batch.append(rtgs)
         
         reward_to_go_batch = np.concatenate(reward_to_go_batch, axis=0)
+        reward_to_go_batch = (reward_to_go_batch - reward_to_go_batch.mean()) / (reward_to_go_batch.std() + 1e-5)
         
         self.sess.run(self._train_op,
                       feed_dict={self.ob_image: s_batch,
