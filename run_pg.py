@@ -62,7 +62,7 @@ if __name__ == "__main__":
         
         s_batch, a_batch, r_batch = [], [], []
         for i in tqdm(range(num_traj)):
-            s_traj, a_traj, r_traj, _ , reward = collect_complete_traj(pg, envs[i % num_env])
+            s_traj, a_traj, r_traj, _ , reward = collect_complete_traj(pg, envs[random.randint(0, num_env - 1)])
             s_batch.append(s_traj)
             a_batch.append(a_traj)
             r_batch.append(r_traj)

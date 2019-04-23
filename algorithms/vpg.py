@@ -20,7 +20,7 @@ class VanillaPolicyGradient(Base):
                  discount=0.99,
                  lr=2.5e-4,
                  gae=0.95,
-                 entropy_coef=0.01,
+                 entropy_coef=0.1, # policy gradient may need more explorations
                  critic_coef=1.0,
                  max_grad_norm=0.5,
                  save_path="./vpg_log"):
